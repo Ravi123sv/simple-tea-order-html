@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tea Stall</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-image: url('https://i.giphy.com/media/v1.Y2lkPTc5MGI3NjExMXB4ZjdkeGIyMWhrcGdrbXpiMjBnaTgyYmpoZmtzczBtZHdxdHQzbCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/l1EthufrdtKeqyBeU/giphy.gif');
+            background-size: cover;
+            color: #333;
+            text-align: center;
+            padding: 20px;
+        }
+
+        h1 {
+            color: #6b4f4f;
+        }
+
+        .container {
+            background-color: rgba(255, 255, 255, 0.9);
+            border-radius: 10px;
+            padding: 20px;
+            margin: auto;
+            width: 300px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+        }
+
+        input[type="text"],
+        input[type="password"],
+        input[type="email"],
+        input[type="tel"],
+        select {
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        input[type="submit"] {
+            padding: 10px;
+            margin-top: 10px;
+            background-color: #6b4f4f;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        input[type="submit"]:hover {
+            background-color: #4e3737;
+        }
+
+        .toggle-form {
+            margin-top: 10px;
+            cursor: pointer;
+            color: #6b4f4f;
+        }
+
+        #ownerDashboard, #userDashboard {
+            display: none;
+            margin-top: 20px;
+            text-align: left;
+        }
+
+        .product-list {
+            margin: 10px 0;
+        }
+
+        .product {
+            padding: 5px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            margin: 5px 0;
+        }
+
+        #welcomeMessage {
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Welcome to the Tea Stall</h1>
+    
+    <div class="container" id="loginForm">
+        <h2>Login</h2>
+        <form onsubmit="return login(event)">
+            <input type="text" id="loginUsername" placeholder="Username" required>
+            <input type="password" id="loginPassword" placeholder="Password" required>
+            <select id="userType" required>
+                <option value="" disabled selected>Select User Type</option>
+                <option value="customer">Customer</option>
+                <option value="owner">Owner</option>
+            </select>
+            <input type="submit" value="Login">
+        </form>
+        <div class="toggle-form" onclick="toggleForms()">Don't have an account? Register</div>
+    </div>
+
+    <div class="container" id="registrationForm" style="display: none;">
+        <h2>Register</h2>
+        <form onsubmit="return register(event)">
+            <input type="text" id="registerUsername" placeholder="Username" required>
+            <input type="email" id="registerEmail" placeholder="Email" required>
+            <input type="tel" id="registerPhone" placeholder="Phone Number" required>
+            <input type="password" id="registerPassword" placeholder="Password" required>
+            <select id="registerUserType" required>
+                <option value="" disabled selected>Select User Type</option>
+                <option value="customer">Customer</option>
+                <option value="owner">Owner</option>
+            </select>
+            <input type="submit" value="Register">
+        </form>
+        <div class="toggle-form" onclick="toggleForms()">Already have an account? Login</div>
+    </div>
+
+    <div id="userDashboard">
+        <h2 id="welcomeMessage"></h2>
+        <div class="toggle-form" onclick="logout()">Logout</div>
+    </div>
+
+    <div id="ownerDashboard">
+        <h2>Owner Dashboard</h2>
+        <h3>Products</h3>
+        <div class="product-list" id="productList"></div>
+        <input type="text" id="newProduct" placeholder="Add New Product" required>
+        <input type="number" id="newProductPrice" placeholder="Price (in Rupees)" required>
+        <button onclick="addProduct()">Add Product</button>
+    </div>
+
+    <script>
+        let users = [];
+        let loggedInUser = null;
+
+        function toggleForms() {
+            const loginForm = document.getElementById("loginForm");
+            const registrationForm = document.getElementById("registrationForm");
+            if (loginForm.style.display === "none") {
+                loginForm.style.display = "block";
+                registrationForm.style.display = "none";
+            } else {
+                loginForm.style.display = "none";
+                registrationForm.style.display = "block";
+            }
+        }
+
+        function register(event) {
+            event.preventDefault();
+            const username = document.getElementById("registerUsername").value;
+            const email = document.getElementById("registerEmail").value;
+            const phone = document.getElementById("registerPhone").value;
+            const password = document.getElementById("registerPassword").value;
+            const userType = document.getElementById("registerUserType").value;
+
+            const newUser = { username, email, phone, password, userType };
+            users.push(newUser);
+            alert("Registration successful! You can now log in.");
+            toggleForms();
+        }
+
+        function login(event) {
+            event.preventDefault();
+            const username = document.getElementById("loginUsername").value;
+            const password = document.getElementById("loginPassword").value;
+            const userType = document.getElementById("userType").value;
+
+            const user = users.find(user => user.username === username && user.password === password && user.userType === userType);
+            if (user) {
+                loggedInUser = user;
+                document.getElementById("welcomeMessage").innerText = `Welcome, ${user.username}!`;
+                alert(`Login successful! Welcome to the Tea Stall as ${user.userType}.`);
+                if (user.userType === "owner") {
+                    showOwnerDashboard();
+                } else {
+                    showUserDashboard();
+                }
+            } else {
+                alert("Invalid username, password, or user type.");
+            }
+        }
+
+        function showUserDashboard() {
+            document.getElementById("loginForm").style.display = "none";
+            document.getElementById("registrationForm").style.display = "none";
+            document.getElementById("userDashboard").style.display = "block";
+        }
+
+        function showOwnerDashboard() {
+            document.getElementById("userDashboard").style.display = "none";
+            document.getElementById("ownerDashboard").style.display = "block";
+        }
+
+        function logout() {
+            loggedInUser = null;
+            document.getElementById("userDashboard").style.display = "none";
+            document.getElementById("ownerDashboard").style.display = "none";
+            document.getElementById("loginForm").style.display = "block";
+        }
+
+        function addProduct() {
+            const productName = document.getElementById("newProduct").value;
+            const productPrice = document.getElementById("newProductPrice").value;
+            if (productName && productPrice) {
+                const productList = document.getElementById("productList");
+                const productItem = document.createElement("div");
+                productItem.className = "product";
+                productItem.innerHTML = `${productName} - ₹${productPrice} <button onclick="removeProduct(this)">Remove</button>`;
+                productList.appendChild(productItem);
+                document.getElementById("newProduct").value = '';
+                document.getElementById("newProductPrice").value = '';
+            } else {
+                alert("Please provide product name and price.");
+            }
+        }
+
+        function removeProduct(button) {
+            const productItem = button.parentElement;
+            productItem.remove();
+        }
+    </script>
+
+</body>
+</html>

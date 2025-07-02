@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Online Ordering System</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-image: url('https://img.freepik.com/free-vector/top-view-cup-coffee-with-roasted-beans_52683-32340.jpg?t=st=1728670117~exp=1728673717~hmac=cd79ee9b8543a6f21e2f008dc96b6760c2de083396bc55bfe6a83b50f4ffc377&w=996');
+            background-size: cover;
+            background-position: center;
+            color: #fff;
+            margin: 0;
+            padding: 0;
+            transition: background 0.5s;
+        }
+
+        nav {
+            background: rgba(0, 0, 0, 0.8);
+            padding: 10px;
+            display: flex;
+            justify-content: space-between;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
+        }
+
+        nav a {
+            color: #fff;
+            text-decoration: none;
+            padding: 10px 20px;
+            transition: background 0.3s;
+        }
+
+        nav a:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: auto;
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .button {
+            padding: 10px 20px;
+            background: #28a745;
+            border: none;
+            color: white;
+            cursor: pointer;
+            margin: 10px;
+            border-radius: 5px;
+            transition: background 0.3s;
+        }
+
+        .button:hover {
+            background: #218838;
+        }
+
+        .product-card {
+            border: 1px solid #fff;
+            padding: 10px;
+            margin: 10px;
+            border-radius: 5px;
+            background: rgba(0, 0, 0, 0.5);
+        }
+
+        #order-list {
+            max-height: 300px;
+            overflow-y: auto;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+
+        #edit-product-modal {
+            background: rgba(0, 0, 0, 0.9);
+            padding: 20px;
+            border-radius: 5px;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 10;
+            display: none;
+        }
+
+        #edit-product-modal input {
+            display: block;
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 5px;
+            border: none;
+        }
+
+        .modal-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 5;
+            display: none;
+        }
+
+        .order-status {
+            margin-top: 20px;
+            color: #FFD700;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+    <nav>
+        <div>
+            <a href="#" onclick="showSection('home')">Home</a>
+            <a href="#" onclick="showSection('products')">Products</a>
+            <a href="#" onclick="showSection('cart')">Cart</a>
+            <a href="#" onclick="showSection('owner-login')">Owner Login</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <!-- Home Section -->
+        <div id="home" class="section">
+            <h1>Welcome to Our Online Ordering System</h1>
+            <p>Order your favorite products with ease!</p>
+            <button class="button" onclick="showSection('products')">Start Ordering</button>
+        </div>
+
+        <!-- Products Section -->
+        <div id="products" class="section hidden">
+            <h1>Products</h1>
+            <div class="product-card" data-name="Coffee" data-price="10">
+                <h2>Coffee</h2>
+                <p>Price: $10</p>
+                <button class="button" onclick="addToCart('Coffee', 10)">Add to Cart</button>
+                <button class="button hidden" id="edit-coffee" onclick="editProduct(this)">Edit Product</button>
+            </div>
+            <div class="product-card" data-name="Tea" data-price="5">
+                <h2>Tea</h2>
+                <p>Price: $5</p>
+                <button class="button" onclick="addToCart('Tea', 5)">Add to Cart</button>
+                <button class="button hidden" id="edit-tea" onclick="editProduct(this)">Edit Product</button>
+            </div>
+            <div class="product-card" data-name="Juice" data-price="7">
+                <h2>Juice</h2>
+                <p>Price: $7</p>
+                <button class="button" onclick="addToCart('Juice', 7)">Add to Cart</button>
+                <button class="button hidden" id="edit-juice" onclick="editProduct(this)">Edit Product</button>
+            </div>
+            <button class="button" onclick="showSection('home')">Back</button>
+        </div>
+
+        <!-- Cart Section -->
+        <div id="cart" class="section hidden">
+            <h1>Your Cart</h1>
+            <ul id="cart-items"></ul>
+            <div class="order-status hidden" id="order-status"></div>
+            <button class="button" onclick="checkout()">Checkout</button>
+            <button class="button" onclick="showSection('home')">Continue Shopping</button>
+        </div>
+
+        <!-- Owner Login Section -->
+        <div id="owner-login" class="section hidden">
+            <h1>Owner Portal Login</h1>
+            <input type="email" id="owner-email" placeholder="Email" required>
+            <input type="password" id="owner-password" placeholder="Password" required>
+            <button class="button" onclick="ownerLogin()">Login</button>
+            <div id="owner-message" class="hidden"></div>
+            <button class="button" onclick="showSection('home')">Back</button>
+        </div>
+
+        <!-- Owner Dashboard Section -->
+        <div id="owner-dashboard" class="section hidden">
+            <h1>Owner Dashboard</h1>
+            <button class="button" onclick="viewOrders()">View Orders</button>
+            <button class="button" onclick="showProducts()">Manage Products</button>
+            <button class="button" onclick="logout()">Logout</button>
+            <button class="button" onclick="showSection('owner-login')">Back to Login</button>
+            <div id="order-list" class="hidden"></div>
+        </div>
+
+        <!-- Edit Product Modal -->
+        <div id="edit-product-modal">
+            <h2>Edit Product</h2>
+            <input type="text" id="edit-product-name" placeholder="Product Name" required>
+            <input type="number" id="edit-product-price" placeholder="Price" min="0" required>
+            <button class="button" onclick="saveProduct()">Save</button>
+            <button class="button" onclick="closeEditModal()">Cancel</button>
+        </div>
+
+        <div class="modal-backdrop" id="modal-backdrop" onclick="closeEditModal()"></div>
+    </div>
+
+    <script>
+        const cart = [];
+        const ownerEmail = "owner@example.com"; // Predefined owner email
+        const ownerPassword = "password123"; // Predefined owner password
+        let currentEditProduct = null;
+        let orders = []; // Array to hold order details
+
+        // Show the specified section and hide others
+        function showSection(section) {
+            const sections = document.querySelectorAll('.section');
+            sections.forEach(s => s.classList.add('hidden'));
+            document.getElementById(section).classList.remove('hidden');
+
+            // If owner is logged in, show edit buttons
+            if (section === 'products' && sessionStorage.getItem('loggedIn') === 'true') {
+                document.getElementById('edit-coffee').classList.remove('hidden');
+                document.getElementById('edit-tea').classList.remove('hidden');
+                document.getElementById('edit-juice').classList.remove('hidden');
+            } else {
+                document.getElementById('edit-coffee').classList.add('hidden');
+                document.getElementById('edit-tea').classList.add('hidden');
+                document.getElementById('edit-juice').classList.add('hidden');
+            }
+        }
+
+        // Add item to cart
+        function addToCart(name, price) {
+            cart.push({ name, price });
+            updateCart();
+        }
+
+        // Update cart display
+        function updateCart() {
+            const cartItems = document.getElementById('cart-items');
+            cartItems.innerHTML = '';
+            cart.forEach(item => {
+                const li = document.createElement('li');
+                li.textContent = `${item.name} - $${item.price}`;
+                cartItems.appendChild(li);
+            });
+        }
+
+        // Checkout process
+        function checkout() {
+            if (cart.length === 0) {
+                alert("Your cart is empty!");
+                return;
+            }
+            alert("Thank you for your order!");
+            cart.length = 0; // Clear the cart
+            updateCart();
+        }
+
+        // Owner login function
+        function ownerLogin() {
+            const email = document.getElementById('owner-email').value;
+            const password = document.getElementById('owner-password').value;
+            if (email === ownerEmail && password === ownerPassword) {
+                sessionStorage.setItem('loggedIn', 'true');
+                document.getElementById('owner-message').textContent = "Login successful!";
+                showSection('owner-dashboard');
+            } else {
+                document.getElementById('owner-message').textContent = "Invalid email or password.";
+            }
+        }
+
+        // Owner logout function
+        function logout() {
+            sessionStorage.removeItem('loggedIn');
+            showSection('home');
+        }
+
+        // Open edit product modal
+        function editProduct(button) {
+            const productCard = button.closest('.product-card');
+            const productName = productCard.getAttribute('data-name');
+            const productPrice = productCard.getAttribute('data-price');
+
+            document.getElementById('edit-product-name').value = productName;
+            document.getElementById('edit-product-price').value = productPrice;
+            currentEditProduct = productCard;
+
+            document.getElementById('edit-product-modal').style.display = 'block';
+            document.getElementById('modal-backdrop').style.display = 'block';
+        }
+
+        // Save product edits
+        function saveProduct() {
+            const newName = document.getElementById('edit-product-name').value;
+            const newPrice = document.getElementById('edit-product-price').value;
+            currentEditProduct.setAttribute('data-name', newName);
+            currentEditProduct.setAttribute('data-price', newPrice);
+            currentEditProduct.querySelector('h2').textContent = newName;
+            currentEditProduct.querySelector('p').textContent = `Price: $${newPrice}`;
+            closeEditModal();
+        }
+
+        // Close edit modal
+        function closeEditModal() {
+            document.getElementById('edit-product-modal').style.display = 'none';
+            document.getElementById('modal-backdrop').style.display = 'none';
+        }
+
+        // View orders function
+        function viewOrders() {
+            const orderList = document.getElementById('order-list');
+            orderList.innerHTML = '';
+            if (orders.length === 0) {
+                orderList.innerHTML = '<p>No orders yet.</p>';
+            } else {
+                orders.forEach(order => {
+                    const li = document.createElement('li');
+                    li.textContent = `${order.name} - $${order.price}`;
+                    orderList.appendChild(li);
+                });
+            }
+            orderList.classList.remove('hidden');
+        }
+
+        // Show products for owner
+        function showProducts() {
+            showSection('products');
+        }
+    </script>
+</body>
+
+</html>
